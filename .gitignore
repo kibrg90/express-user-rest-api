@@ -1,6 +1,8 @@
 # Node modules
 node_modules/
 
+src/database/sqlite.sqlite
+
 # Build output
 dist/
 build/

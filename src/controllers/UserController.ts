@@ -1,13 +1,12 @@
 import { injectable, inject } from "tsyringe";
 import { Request, Response } from 'express';
-import UserRepo from "../repositories/UserRepo";
-import User from '../repositories/types/UserInterface';
+import UserRepo from "../repositories/UserRepoMemory";
+import User from '../repositories/types/User';
+import UserRepoSQLite from "../repositories/UserRepo";
 
 @injectable()
 export default class UserController {
-    constructor(
-        @inject(UserRepo) private userRepo: UserRepo
-    ) { }
+    constructor(@inject(UserRepoSQLite) private userRepo: UserRepoSQLite) { }
 
     create(request: Request, response: Response): User {
         return this.userRepo.create(request.body);

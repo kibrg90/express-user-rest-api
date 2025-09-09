@@ -1,52 +1,50 @@
-import User from './types/UserInterface';
+import 'reflect-metadata';
+import { injectable, inject } from "tsyringe";
+import UserRepoInterface from "./interfaces/UserRepoInterface";
+import { Database } from 'better-sqlite3';
+import User from './types/User';
 
-export default class UserRepo {
-    private idCounter = 0;
-    private users: User[] = [];
+@injectable()
+export default class UserRepoSQLite implements UserRepoInterface {
+    constructor(@inject('DB') private db: Database) {
 
+    }
     create(attributes: Omit<User, 'id'>): User {
-        const record = { id: ++this.idCounter, ...attributes };
-        this.users.push(record);
+        const statement = this.db.prepare('INSERT INTO users (name, email) VALUES (?, ?)');
+        const result = statement.run(attributes.name, attributes.email);
 
-        return { ...record };
+        return { id: Number(result.lastInsertRowid), ...attributes };
     }
 
     update(id: Number, attributes: Omit<User, 'id'>): User | null {
-        const index = this.users.findIndex((user) => user.id === id);
-        if (index === -1) {
-            return null;
-        }
-        this.users[index] = { ...this.users[index], ...attributes };
+        const statement = this.db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?');
+        const result = statement.run(attributes.name, attributes.email, id);
 
-        return { ...this.users[index] };
+        return this.findById(id);
     }
 
     remove(id: Number): boolean {
-        const index = this.users.findIndex((user) => user.id === id);
-        if (index === -1) {
-            return false;
-        }
-        this.users.splice(index, 1);
-
-        return true;
+        const statement = this.db.prepare('DELETE FROM users WHERE id = ?');
+        const result = statement.run(id);
+        
+        return result.changes > 0;
     }
 
     findById(id: Number): User | null {
-        const record = this.findByIdUnsafe(id);
+        const statement = this.db.prepare('SELECT * FROM users WHERE id = ?');
 
-        return record ? { ...record } : null;
+        return statement.get(id) as User | null;
+    }
+
+    findByEmail(email: string): User | null {
+        const statement = this.db.prepare('SELECT * FROM users WHERE email = ?');
+
+        return statement.get(email) as User | null;
     }
 
     findAll(): User[] {
-        return this.users.map((user) => ({ ...user }));
-    }
+        const statement = this.db.prepare('SELECT * FROM users');
 
-    findByIdUnsafe(id: Number) {
-        const record = this.users.find((user) => user.id === id);
-        if (record) {
-            return record;
-        }
-
-        return null;
+        return statement.all() as User[];
     }
 }
