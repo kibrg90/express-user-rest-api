@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Router, Request, Response } from "express";
+import express, { Router, Request, Response } from "express";
 import { container } from 'tsyringe';
 import UserController from "../controllers/UserController";
 import { validateRequest } from "../middlewares/validateRequest";
@@ -7,6 +7,7 @@ import { createUserValidation } from "../controllers/validation/user/create";
 
 const router = Router();
 const userController = container.resolve(UserController);
+router.use(express.json());
 
 router.post(
     '/',
