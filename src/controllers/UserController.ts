@@ -1,4 +1,4 @@
-import { injectable, inject, autoInjectable } from "tsyringe";
+import { injectable, inject } from "tsyringe";
 import { Request, Response } from 'express';
 import UserRepo from "../repositories/UserRepo";
 import User from '../repositories/types/UserInterface';
